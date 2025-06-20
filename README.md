@@ -26,5 +26,12 @@ docker build -t sefaria-llm .
 docker run -p 8501:8501 -e SEFARIA_API_KEY=xxx -e OPENAI_API_KEY=xxx sefaria-llm
 ```
 
+### How I ran it
+1. Run Docker
+2. Add an env file with credentials
+3. run this command: docker build -t sefaria-llm .
+4. after completion, run this command: docker run --env-file .env -p 8501:8501 sefaria-llm
+5. open on http://localhost:8501/
+
 ### Serverless (Render, Fly.io, Railway)
 Use Dockerfile + env vars.

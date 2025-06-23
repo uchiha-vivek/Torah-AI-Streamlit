@@ -51,6 +51,9 @@ coverage.xml
 .pytest_cache/
 cover/
 
+# Streamlit artifacts
+.streamlit/secrets.toml
+
 # Translations
 *.mo
 *.pot

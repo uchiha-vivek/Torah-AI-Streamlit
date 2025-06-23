@@ -52,8 +52,8 @@ def call_llm(messages):
         return None, str(e)
 
 # Streamlit UI setup
-st.set_page_config(page_title="Torah ai", layout="wide", page_icon="📖")
-st.title("📖 Torah ai")
+st.set_page_config(page_title="Torah AI", layout="wide", page_icon="📖")
+st.title("📖 Torah AI")
 
 
 # API Key config panel
@@ -236,7 +236,7 @@ if st.button("Submit"):
             references = [ref.strip() for ref in ref_response.split(",") if ref.strip()]
             fetched_texts = {}
 
-            with st.spinner("📚 Fetching texts from Sefaria..."):
+            with st.spinner("📚 Fetching texts from Torah AI..."):
                 for ref in references:
                     data, error = sefaria_get(ref, sefaria_api_key)
                     if error:
@@ -250,7 +250,7 @@ if st.button("Submit"):
             user_prompt = f"The user asked: '{question}'.\nHere are the relevant Jewish texts:\n{combined_text}"
             st.session_state.memory.append({"role": "user", "content": user_prompt})
 
-            with st.spinner("💬 Asking Azure OpenAI..."):
+            with st.spinner("💬 Asking Torah AI..."):
                 final_answer, answer_error = call_llm(st.session_state.memory)
 
             if answer_error:

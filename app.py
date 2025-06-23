@@ -52,8 +52,8 @@ def call_llm(messages):
         return None, str(e)
 
 # Streamlit UI setup
-st.set_page_config(page_title="Sefaria Assistant", layout="wide", page_icon="📖")
-st.title("📖 Sefaria Assistant")
+st.set_page_config(page_title="Torah ai", layout="wide", page_icon="📖")
+st.title("📖 Torah ai")
 
 
 # API Key config panel
@@ -150,7 +150,10 @@ General Behavior
      Pirkei Avot 1:2
      “The world stands on three things: on Torah, on service [of God], and on acts of lovingkindness.”
      https://www.sefaria.org/Pirkei_Avot.1.2
-
+5. Content Cleanliness:
+   - Do not include any raw HTML tags in responses (e.g., `<sup>`, `<span>`, `<a>`).
+   - Remove all markup and return plain text only.
+     
 =========================================
 When Asked for a Specific Text
 =========================================
@@ -266,7 +269,7 @@ if st.button("Submit"):
                 col1, col2 = st.columns([2, 1])
 
                 with col1:
-                    st.subheader("🤖 LLM Answer")
+                    st.subheader("🤖  Answer")
                     st.write(final_answer)
 
                     st.subheader("📘 Retrieved References")

@@ -10,8 +10,8 @@ load_dotenv()
 
 # Sefaria and Azure OpenAI config
 SEFARIA_API_KEY = os.getenv("SEFARIA_API_KEY", "")
-AZURE_OPENAI_ENDPOINT = os.getenv("ENDPOINT_URL", "https://torahaischolar.openai.azure.com/")
-AZURE_OPENAI_DEPLOYMENT = os.getenv("DEPLOYMENT_NAME", "Tora-AI-Scholar")
+AZURE_OPENAI_ENDPOINT = os.getenv("ENDPOINT_URL")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("DEPLOYMENT_NAME")
 AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 
 SEFARIA_BASE_URL = "https://www.sefaria.org/api"
@@ -54,7 +54,7 @@ def call_llm(messages):
 # Streamlit UI setup
 st.set_page_config(page_title="Sefaria Assistant", layout="wide", page_icon="📖")
 st.title("📖 Sefaria Assistant")
-badge(type="github", name="View on GitHub", url="https://github.com/Sefaria/Sefaria-Project")
+
 
 # API Key config panel
 st.sidebar.header("🔧 API Keys")

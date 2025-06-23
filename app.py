@@ -10,9 +10,9 @@ load_dotenv()
 
 # Sefaria and Azure OpenAI config
 SEFARIA_API_KEY = os.getenv("SEFARIA_API_KEY", "")
-AZURE_OPENAI_ENDPOINT = os.getenv("ENDPOINT_URL")
-AZURE_OPENAI_DEPLOYMENT = os.getenv("DEPLOYMENT_NAME")
-AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_ENDPOINT = os.getenv("ENDPOINT_URL","https://torahaischolar.openai.azure.com/")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("DEPLOYMENT_NAME","Tora-AI-Scholar")
+AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_API_KEY","AtyHidbRidZmVya02oDiQS3tfDDQuZgVumHe6rwc9pa2deW4pdLPJQQJ99BDACYeBjFXJ3w3AAABACOG2RGx")
 
 SEFARIA_BASE_URL = "https://www.sefaria.org/api"
 

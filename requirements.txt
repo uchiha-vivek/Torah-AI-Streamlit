@@ -3,3 +3,4 @@ openai
 requests
 pandas
 streamlit-extras
+python-dotenv

@@ -1,15 +1,27 @@
 import streamlit as st
 import requests
 import json
-import openai
 import os
-
+from dotenv import load_dotenv
 from streamlit_extras.badges import badge
+from openai import AzureOpenAI
 
+load_dotenv()
+
+# Sefaria and Azure OpenAI config
 SEFARIA_API_KEY = os.getenv("SEFARIA_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+AZURE_OPENAI_ENDPOINT = os.getenv("ENDPOINT_URL", "https://torahaischolar.openai.azure.com/")
+AZURE_OPENAI_DEPLOYMENT = os.getenv("DEPLOYMENT_NAME", "Tora-AI-Scholar")
+AZURE_OPENAI_KEY = os.getenv("AZURE_OPENAI_API_KEY")
 
 SEFARIA_BASE_URL = "https://www.sefaria.org/api"
+
+# Initialize Azure OpenAI client
+azure_client = AzureOpenAI(
+    azure_endpoint=AZURE_OPENAI_ENDPOINT,
+    api_key=AZURE_OPENAI_KEY,
+    api_version="2025-01-01-preview",
+)
 
 def sefaria_get(ref, api_key=None):
     url = f"{SEFARIA_BASE_URL}/texts/{ref}"
@@ -23,26 +35,33 @@ def sefaria_get(ref, api_key=None):
     except Exception as e:
         return None, str(e)
 
-def call_llm(messages, openai_key):
+def call_llm(messages):
     try:
-        client = openai.OpenAI(api_key=openai_key)
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=messages
+        response = azure_client.chat.completions.create(
+            model=AZURE_OPENAI_DEPLOYMENT,
+            messages=messages,
+            max_tokens=800,
+            temperature=0.7,
+            top_p=0.95,
+            frequency_penalty=0,
+            presence_penalty=0,
+            stream=False
         )
         return response.choices[0].message.content.strip(), None
     except Exception as e:
         return None, str(e)
 
+# Streamlit UI setup
 st.set_page_config(page_title="Sefaria Assistant", layout="wide", page_icon="📖")
 st.title("📖 Sefaria Assistant")
 badge(type="github", name="View on GitHub", url="https://github.com/Sefaria/Sefaria-Project")
 
-# API keys
+# API Key config panel
 st.sidebar.header("🔧 API Keys")
 sefaria_api_key = st.sidebar.text_input("Sefaria API Key (optional)", value=SEFARIA_API_KEY, type="password")
-openai_api_key = st.sidebar.text_input("OpenAI API Key (required)", value=OPENAI_API_KEY, type="password")
+st.sidebar.info("✅ Using Azure OpenAI, no need for OpenAI key here.")
 
+# Session memory init
 if "memory" not in st.session_state:
     st.session_state.memory = [
         {
@@ -195,20 +214,18 @@ System Boundaries
 if "full_history" not in st.session_state:
     st.session_state.full_history = []
 
-# Main Q&A area
+# Main interface
 st.subheader("Ask a question")
 question = st.text_area("Your Question:", placeholder="e.g. What does the Torah say about repentance?", height=100)
 
 if st.button("Submit"):
-    if not openai_api_key:
-        st.error("Please provide your OpenAI API key.")
-    elif not question.strip():
+    if not question.strip():
         st.warning("Please enter a question.")
     else:
-        # Step 1: Ask GPT to find relevant references
+        # Step 1: Get references
         with st.spinner("🔍 Finding relevant Sefaria references..."):
             ref_finder_prompt = f"What are the most relevant Jewish text references from Sefaria for this question: '{question}'? Return a comma-separated list (e.g., Genesis 1:1, Exodus 20:13, Mishneh Torah, Repentance 2:1)."
-            ref_response, ref_error = call_llm([{"role": "user", "content": ref_finder_prompt}], openai_api_key)
+            ref_response, ref_error = call_llm([{"role": "user", "content": ref_finder_prompt}])
 
         if ref_error:
             st.error(ref_error)
@@ -225,13 +242,13 @@ if st.button("Submit"):
                         text = data.get("text", [])
                         fetched_texts[ref] = text[0] if text else "[No text found]"
 
-            # Step 2: Ask LLM the actual question using retrieved texts
+            # Step 2: Answer the question using those texts
             combined_text = "\n".join([f"{ref}: {text}" for ref, text in fetched_texts.items()])
             user_prompt = f"The user asked: '{question}'.\nHere are the relevant Jewish texts:\n{combined_text}"
             st.session_state.memory.append({"role": "user", "content": user_prompt})
 
-            with st.spinner("💬 Asking LLM..."):
-                final_answer, answer_error = call_llm(st.session_state.memory, openai_api_key)
+            with st.spinner("💬 Asking Azure OpenAI..."):
+                final_answer, answer_error = call_llm(st.session_state.memory)
 
             if answer_error:
                 st.error(answer_error)
@@ -245,7 +262,7 @@ if st.button("Submit"):
 
                 st.success("✅ Answer generated!")
 
-                # Layout display
+                # Layout
                 col1, col2 = st.columns([2, 1])
 
                 with col1:

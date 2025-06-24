@@ -1,0 +1,3 @@
+AZURE_OPENAI_API_KEY="AtyHidbRidZmVya02oDiQS3tfDDQuZgVumHe6rwc9pa2deW4pdLPJQQJ99BDACYeBjFXJ3w3AAABACOG2RGx"
+ENDPOINT_URL="https://torahaischolar.openai.azure.com/"
+DEPLOYMENT_NAME="Tora-AI-Scholar"

@@ -4,3 +4,4 @@ requests
 pandas
 streamlit-extras
 python-dotenv
+beautifulsoup4

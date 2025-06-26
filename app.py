@@ -26,8 +26,9 @@ def clean_html(raw_html):
     return BeautifulSoup(raw_html, "html.parser").get_text(separator=" ", strip=True)
 
 # Translate Hebrew using LLM if no English is available
+# TODO: teak prompt to account for aramaic source texts
 def translate_hebrew(hebrew_text):
-    prompt = f"Translate this Hebrew Torah text to English:\n\n{hebrew_text}"
+    prompt = f"Translate this Hebrew and/or Aramaic Torah text to English:\n\n{hebrew_text}"
     return call_llm([{"role": "user", "content": prompt}], system="You are a Torah translation assistant.")
 
 # Get full Sefaria text with fallback translation
@@ -43,7 +44,7 @@ def get_sefaria_text(ref):
         if not en.strip() and he.strip():
             en = translate_hebrew(he)
 
-        full = f"{clean_html(en)}\n\n**Hebrew:**\n{clean_html(he) if he else '[No Hebrew]'}"
+        full = f"{clean_html(en)}\n\n**Hebrew/aramaic:**\n{clean_html(he) if he else '[No Hebrew]'}"
         return full
     except:
         return None

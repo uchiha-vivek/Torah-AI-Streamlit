@@ -26,6 +26,7 @@ def clean_html(raw_html):
     return BeautifulSoup(raw_html, "html.parser").get_text(separator=" ", strip=True)
 
 # Translate Hebrew using LLM if no English is available
+# TODO: teak prompt to account for aramaic source texts
 def translate_hebrew(hebrew_text):
     prompt = f"Translate this Hebrew Torah text to English:\n\n{hebrew_text}"
     return call_llm([{"role": "user", "content": prompt}], system="You are a Torah translation assistant.")

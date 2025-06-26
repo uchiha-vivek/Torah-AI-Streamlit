@@ -127,7 +127,7 @@ def search_sefaria(query, max_results=50, filters=[]):
 # --- UI Layout --- #
 st.set_page_config(page_title="Torah AI – Deep Search", layout="wide")
 st.title("📖 Torah AI ")
-st.caption("Includes Tanakh, Talmud, Halacha, Josephus, and Hebrew texts")
+st.caption("Includes Tanakh, Talmud, Halacha, and Hebrew texts")
 
 st.subheader("Ask a Question")
 question = st.text_area("Your Question:", placeholder="e.g. What color was KIng David's Hair?", height=100)

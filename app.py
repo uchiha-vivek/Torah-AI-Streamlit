@@ -44,7 +44,7 @@ def get_sefaria_text(ref):
         if not en.strip() and he.strip():
             en = translate_hebrew(he)
 
-        full = f"{clean_html(en)}\n\n**Hebrew/aramaic:**\n{clean_html(he) if he else '[No Hebrew]'}"
+        full = f"{clean_html(en) if en else '[No English]'}\n\n**Hebrew:**\n{clean_html(he) if he else '[No Hebrew]'}"
         return full
     except:
         return None
@@ -133,6 +133,19 @@ st.caption("Includes Tanakh, Talmud, Halacha, and Hebrew texts")
 st.subheader("Ask a Question")
 question = st.text_area("Your Question:", placeholder="e.g. What color was KIng David's Hair?", height=100)
 
+# TODO: translation logic here
+def translate_aramaic(text):
+    pass
+
+
+def translation_test(result):
+    lang = call_llm(f'what language is {result["book"]} written in')
+    if "aramaic" in lang or "Aramaic" in lang:
+        result["he"] = translate_aramaic(result["he"])
+        print("needs translation")
+    return result
+
+
 if st.button("Search and Answer"):
     if not question.strip():
         st.warning("Please enter a question.")
@@ -146,6 +159,9 @@ if st.button("Search and Answer"):
                 ref = result["ref"]
                 text = get_sefaria_text(ref)
                 if text:
+                    # test for results that are in aramaic without included translation
+                    if '[No English]' in text:
+                        text = translation_test(result)
                     full_texts[ref] = text
 
         # Step 1: Filter with LLM

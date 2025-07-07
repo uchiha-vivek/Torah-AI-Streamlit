@@ -431,17 +431,17 @@ st.caption("Includes Tanakh, Talmud, Halacha, and Hebrew texts")
 st.subheader("Ask a Question")
 question = st.text_area("Your Question:", placeholder="e.g. What color was KIng David's Hair?", height=100)
 
-# TODO: translation logic here
-def translate_aramaic(text):
-    pass
-
-
-def translation_test(result):
-    lang = call_llm(f'what language is {result["book"]} written in')
-    if "aramaic" in lang or "Aramaic" in lang:
-        result["he"] = translate_aramaic(result["he"])
-        print("needs translation")
-    return result
+# # TODO: translation logic here
+# def translate_aramaic(text):
+#     pass
+#
+#
+# def translation_test(result):
+#     lang = call_llm(f'what language is {result["book"]} written in')
+#     if "aramaic" in lang or "Aramaic" in lang:
+#         result["he"] = translate_aramaic(result["he"])
+#         print("needs translation")
+#     return result
 
 
 if st.button("Search and Answer"):
@@ -461,7 +461,7 @@ if st.button("Search and Answer"):
 
         # Step 1: Filter with LLM
         all_combined = "\n\n".join([f"[start of source] {ref}: {text}. [end of current source] " for ref, text in full_texts.items()])
-        filter_prompt = (f"From the following Torah sources, select only the sources most relevant to answering this "
+        filter_prompt = (f"From the following Torah sources from Sefaria, select only the sources most relevant to answering this "
                          f"question: '{question}'."
                          f" Return selected sources verbatim of the original text, keeping each source separate .")
 
@@ -473,29 +473,50 @@ if st.button("Search and Answer"):
 
 
         # Step 2: Final answer from filtered context
-        answer_prompt = (f"The user asked: '{question}'. Use the filtered Sefaria text below to answer clearly and accurately:\n\n{filtered}")
+        answer_prompt = (f"The user asked: '{question}'. Use the Sefaria text below to answer clearly and accurately:\n\n{filtered}")
 
         with st.spinner("💬 Answering with LLM..."):
             answer = call_llm([
                 {"role": "user", "content": answer_prompt}
             ])
-            filtered_sources = call_llm([
-                {"role": "user", "content": f"From the following sources, return the accurate citations for the text quoted in this answer: '{answer}'. "
-                                            f" Disregard any citations that they currently have,"
-                                            f" check them each and provide new citations based on where they are found in the provided sources."
-                                            f"\n\n" + all_combined[:12000]}
-            ])
             answer = call_llm([
-                {"role": "user", "content": f"Replace  all citations in {answer} with the corrected citations in {filtered_sources} and then return the corrected version."
-                                            f" Do not add any text or make any alterations other than correcting any incorrect citations."}
+                {"role": "user", "content": f"based only on this data from Sefaria: '{all_combined[:12000]}' go over every single "
+                                            f"citation for every reference, excerpt, and/or quote in this generated"
+                                            f" response: '{answer}', and compare them to the original data."
+                                            f"For any that do not match EXACTLY, search the original data to find a "
+                                            f"source that has the matching text, and then use it to correct the citation."
+                                            f" Do not change anything in the generated response except for the incorrect "
+                                            f"citations. Return only the corrected version of the response. Do not say anything else."}
             ])
+
+            filtered = call_llm([
+                {"role": "user", "content": f"based only on these texts from Sefaria: '{all_combined[:12000]}' go over every single "
+                                            f"citation for every source in this generated"
+                                            f" list of sources: '{filtered}', and compare them"
+                                            f"For any that do not match, search the provided original data to find a "
+                                            f"source that contains the matching text, and then use it to correct the citation."
+                                            f" Do not change anything in the generated list of sources except for the incorrect "
+                                            f"citations. Return only the corrected version of the list of sources with correct citations."
+                                            f" Do not say anything else."}
+            ])
+            # answer = answer.strip('*****')
+            # filtered_sources = call_llm([
+            #     {"role": "user", "content": f"From the following sources, return the accurate citations for the text quoted in this answer: '{answer}'. "
+            #                                 f" Disregard any citations that they currently have,"
+            #                                 f" check them each and provide new citations based on where they are found in the provided sources."
+            #                                 f"\n\n" + all_combined[:12000]}
+            # ])
+            # answer = call_llm([
+            #     {"role": "user", "content": f"Replace  all citations in {answer} with the corrected citations in {filtered_sources} and then return the corrected version."
+            #                                 f" Do not add any text or make any alterations other than correcting any incorrect citations."}
+            # ])
 
         # Display results
         st.subheader("🤖 Answer")
         st.write(answer)
 
         st.subheader("📘 Filtered Source Excerpts")
-        st.write(filtered_sources)
+        st.write(filtered)
 
         st.subheader("📚 All Sources Queried")
         for result in search_results:

@@ -199,6 +199,8 @@ Always confirm that the citation provided is accurate to the content that it is 
 
 Always confirm that the source text is found in Sefaria exactly as presented in the corresponding provided citation.
 
+Always check text contents and citations against the original source before using and/or returning them.
+
 Never paraphrase, rephrase, or summarise when presenting text as directly quoting a source.
 
 
@@ -314,7 +316,7 @@ Prohibited Behavior:
 Do not generate or hallucinate any text or content not directly retrieved from Sefaria's APIs.
 
 
-Do not speculate, misattribute, misquote, change, or fabricate citations.
+Do not speculate, misattribute, misquote, change, or fabricate citations, sources, and/or texts.
 
 
 Always include a valid Sefaria.org link to the retrieved source.
@@ -448,10 +450,10 @@ if st.button("Search and Answer"):
                     full_texts[ref] = text
 
         # Step 1: Filter with LLM
-        all_combined = "\n\n".join([f"[start of source] {ref}: {text}. [end of current source] " for ref, text in full_texts.items()])
+        all_combined = "\n\n".join([f" {ref}: {text}. " for ref, text in full_texts.items()])
         filter_prompt = (f"From the following Torah sources from Sefaria, select only the sources most relevant to answering this "
                          f"question: '{question}'."
-                         f" Return selected sources verbatim of the original text, keeping each source separate .")
+                         f" Return selected sources verbatim of the original text without changing any text or citations at all.")
 
 
         with st.spinner("🧠 Filtering with LLM..."):
@@ -474,18 +476,19 @@ if st.button("Search and Answer"):
                                             f"For any that do not match EXACTLY, search the original data to find a "
                                             f"source that has the matching text, and then use it to correct the citation."
                                             f" Do not change anything in the generated response except for the incorrect "
-                                            f"citations. Return only the corrected version of the response. Do not say anything else."}
+                                            f"citations. If any sources do not exist anywhere, then remove them from the answer."
+                                            f" Return only the corrected version of the response. Say nothing in your response that "
+                                            f"indicates that this response is a correction, present it as a replacement for the original response."}
             ])
 
-            filtered = call_llm([
-                {"role": "user", "content": f"go over every citation for every source in this generated"
-                                            f" list of sources: '{filtered}', and compare them to these accurately"
-                                            f" cited texts from Sefaria: '{all_combined[:12000]}'."
-                                            f"For any that do not match, search the provided Sefaria data to find a "
-                                            f"source that contains the matching text, and then use it to correct the citation."
-                                            f" Do not change anything in the generated list of sources except to correct the incorrect "
-                                            f"citations. Return only the corrected version of the list of sources with citations."
-                                            f" Do not say anything else."}
+            filtered_sources = call_llm([
+                {"role": "user", "content": f"for every reference, excerpt, and/or quote in this generated response: '{answer}', "
+                                            f"find the source in this Sefaria data: '{all_combined[:12000]}' "
+                                            f"(in the text itself, not in the metadata). Then generate "
+                                            f"a list of used sources and return it. Each source should consist of an accurate citation,"
+                                            f"the most relevant excerpt to the topic from the original text, and a working Sefaria.org"
+                                            f"link to allow the user to navigate to the original text. Say nothing in your response that "
+                                            f"indicates that this response is a correction, present it as a replacement for the original response."}
             ])
 
         # Display results
@@ -493,7 +496,7 @@ if st.button("Search and Answer"):
         st.write(answer)
 
         st.subheader("📘 Filtered Source Excerpts")
-        st.write(filtered)
+        st.write(filtered_sources)
 
         st.subheader("📚 All Sources Queried")
         for result in search_results:
